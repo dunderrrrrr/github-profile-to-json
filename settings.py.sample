@@ -1,0 +1,7 @@
+config = {
+    # Github API url
+    "apiurl": "https://api.github.com",
+
+    # Github TOKEN (https://github.com/settings/tokens)
+    "token": "",
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>github-profile-to-json</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link href="helpers/css/fa/css/all.css" rel="stylesheet"> <!--load all styles -->
+  <link rel="stylesheet" type="text/css" href="helpers/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Activity</h3>
+        <div class="activity-feed">
+          {% for event in data.events.items() %}
+            <div class="feed-item">
+              <div class="date">{{ event[1]['created_at'] }}</div>
+              <div class="text">
+                <span data-toggle="tooltip" data-placement="top" title="{{ event[1]['type'] }}">
+                  {% set event_icon = event[1]['type'] %}
+                  {% if event_icon == 'WatchEvent' %}
+                    <i class="fas fa-eye"></i>
+                  {% elif event_icon == 'IssueCommentEvent' %}
+                    <i class="fas fa-comment"></i>
+                  {% elif event_icon == 'IssuesEvent' %}
+                    <i class="fas fa-clipboard-list"></i>
+                  {% elif event_icon == 'PushEvent' %}
+                    <i class="fas fa-upload"></i>
+                  {% elif event_icon == 'DeleteEvent' %}
+                    <i class="fas fa-calendar-times"></i>
+                  {% elif event_icon == 'PullRequestEvent' %}
+                    <i class="fas fa-angle-double-down"></i>
+                  {% elif event_icon == 'CreateEvent' %}
+                    <i class="fas fa-calendar-plus"></i>
+                  {% elif event_icon == 'ForkEvent' %}
+                    <i class="fas fa-code-branch"></i>
+                  {% elif event_icon == 'ReleaseEvent' %}
+                  <i class="fas fa-handshake"></i>
+                  {% else %}                  
+                    {{ event_icon }}
+                  {% endif %}
+                </span>
+                <a href="https://github.com/{{ event[1]['repo'] }}" target="_blank">{{ event[1]['repo'] }}</a> 
+                <span class="activity_type">({{ event[1]['type'] }})</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-8 main">
+      	 <div class="well profile">
+            <div class="col-sm-12">
+              <div class="col-xs-12">
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#jsonModal">Export json</button>
+                <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <textarea name="" id="json_output" cols="30" rows="10"></textarea>                        
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="clipboard_json()">Copy to clipboard</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-12 col-sm-8">
+                  <h2>{{ data.user.user_data.login }}</h2>
+                  <p><strong><i class="fab fa-firefox-browser"></i> Homepage: </strong> <a href="{{ data.user.user_data.blog_url }}" target="_blank">{{ data.user.user_data.blog_url }}</a></p>
+                  <p><strong><i class="fas fa-address-card"></i> About: </strong> {{ data.user.user_data.desc }} </p>
+                  <p><strong><i class="fab fa-github"></i> Github: </strong> <a href="{{ data.user.user_data.url }}" target="_blank">{{ data.user.user_data.url }}</a></p>
+              </div>
+              <div class="col-xs-12 col-sm-4 text-center">
+                  <figure>
+                      <img src="{{ data.user.user_data.avatar }}" alt="" class="img-circle img-responsive">
+                  </figure>
+              </div>
+            </div>
+            <div class="col-xs-12 divider text-center numbers_sum">
+              <div class="col-xs-12 col-sm-3 emphasis">
+                  <h2><strong>{{ data.user.numbers.repos }}</strong></h2>
+                  <p><small>Public repositories</small></p>
+              </div>
+              <div class="col-xs-12 col-sm-3 emphasis">
+                <h2><strong>{{ data.repos_stars }}</strong></h2>
+                <p><small>Repository stars</small></p>
+              </div>             
+              <div class="col-xs-12 col-sm-3 emphasis">
+                  <h2><strong>{{ data.user.numbers.followers }}</strong></h2>
+                  <p><small>Followers</small></p>
+              </div>
+              <div class="col-xs-12 col-sm-3 emphasis">
+                  <h2><strong>{{ data.user.numbers.following }}</strong></h2>
+                  <p><small>Following</small></p>
+              </div>              
+            </div>
+            <div class="col-sm-12 divider repos">
+              <div class="articles card">
+                <div class="card-header d-flex align-items-center">
+                  <h3>Repositories</h3>
+                </div>
+                <div class="card-body no-padding">
+                  {% for repo in data.repos.items() %}
+                  <div class="item d-flex align-items-center repo" id="repo_show-{{ repo[1]['id'] }}" onclick="window.location='https://github.com/{{ repo[1]['name'] }}', '_blank';">
+                    <div class="text">
+                      <small class="repo_date">Created @ {{ repo[1]['dates']['created_at'] }}</small>
+                      <h3 class="h5"><i class="fas fa-caret-right"></i> {{ repo[1]['name'] }}</h3>
+                      <span class="repo-desc">
+                        {% if repo[1]['desc'] %}
+                          {{ repo[1]['desc'] }}
+                        {% else %}
+                          No description.
+                        {% endif %}
+                      </span>
+                      <div class="row repo_numbers" id="hover-{{ repo[1]['id'] }}">
+                        <div class="col-sm-3"><span data-toggle="tooltip" data-placement="top" title="Language"><i class="fas fa-code"></i> {{ repo[1]['language'] }}</span></div>
+                        <div class="col-sm-3"><span data-toggle="tooltip" data-placement="top" title="Forks"><i class="fas fa-code-branch"></i> {{ repo[1]['forks'] }}</span></div>
+                        <div class="col-sm-3"><span data-toggle="tooltip" data-placement="top" title="Watchers"><i class="fas fa-eye"></i> {{ repo[1]['watchers'] }}</span></div>
+                        <div class="col-sm-3" ><span data-toggle="tooltip" data-placement="top" title="Stars"><i class="fas fa-star"></i> {{ repo[1]['stars'] }}</span></div>
+                      </div>
+                      <style>#hover-{{ repo[1]['id'] }} {display: none;}</style>   
+                      <script>
+                        $("#repo_show-{{ repo[1]['id'] }}").on("mouseenter", function() {
+                            $("#hover-{{ repo[1]['id'] }}").show();
+                        }).on("mouseleave", function() {
+                            $("#hover-{{ repo[1]['id'] }}").hide();
+                        });
+                      </script>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+      	 </div>
+  		</div>
+    </div>
+  </div>
+  <script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+  <script>
+    var myData = {{ json_data }};
+    var textedJson = JSON.stringify(myData, undefined, 4);
+    $('#json_output').text(textedJson);
+  </script>
+  <script>
+    function clipboard_json() {
+      var copyText = document.getElementById("json_output");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+      document.execCommand("copy");
+    } 
+    </script>
+</body>
+</html>
